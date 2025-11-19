@@ -1,0 +1,263 @@
+---
+title: "Chuleta esencial de R para principiantes"
+author: "José Manuel Sánchez Álvarez"
+center: "IES Rafael Alberti — Curso 2025–2026"
+subject: "Programación para Inteligencia Artificial — Introducción a R"
+lang: "es"
+---
+  
+  # 🧠 Introducción
+  
+  R es un lenguaje de programación orientado al **análisis de datos**, **estadística** y **visualización**.  
+A diferencia de Python, R está pensado desde el principio para trabajar con **estructuras vectoriales y tabulares** (vectores, listas, data frames).
+
+---
+  
+  ## 1️⃣ Asignación de valores y tipos de datos
+  
+  ### ➤ Asignación
+  ```r
+x <- 10     # Asignación con flecha (recomendada)
+y = 20      # También funciona con = 
+z <- x + y
+````
+
+### ➤ Tipos de datos básicos
+
+| Tipo     | Ejemplo               | Función para comprobar |
+  | -------- | --------------------- | ---------------------- |
+  | numérico | `x <- 3.14`           | `is.numeric(x)`        |
+  | entero   | `x <- 10L`            | `is.integer(x)`        |
+  | lógico   | `x <- TRUE` o `FALSE` | `is.logical(x)`        |
+  | cadena   | `x <- "Hola"`         | `is.character(x)`      |
+  | complejo | `x <- 3 + 2i`         | `is.complex(x)`        |
+  
+  ### ➤ Conversión de tipos
+  
+  ```r
+as.numeric("3.14")
+as.character(42)
+as.logical(1)   # TRUE
+```
+
+---
+  
+  ## 2️⃣ Operadores y operandos
+  
+  ### ➤ Aritméticos
+  
+  | Operador   | Significado     | Ejemplo    |
+  | ---------- | --------------- | ---------- |
+  | `+`        | Suma            | `5 + 3`    |
+  | `-`        | Resta           | `5 - 3`    |
+  | `*`        | Multiplicación  | `5 * 3`    |
+  | `/`        | División        | `5 / 3`    |
+  | `^` o `**` | Potencia        | `2^3`      |
+  | `%%`       | Resto (módulo)  | `10 %% 3`  |
+  | `%/%`      | División entera | `10 %/% 3` |
+  
+  ### ➤ Comparación
+  
+  | Operador          | Significado             | Ejemplo  |
+  | ----------------- | ----------------------- | -------- |
+  | `==`              | Igual                   | `x == y` |
+  | `!=`              | Distinto                | `x != y` |
+  | `<` `>` `<=` `>=` | Comparaciones numéricas | `x > 5`  |
+  
+  ### ➤ Lógicos
+  
+  | Operador | Significado | Ejemplo             |          |          |
+  | -------- | ----------- | ------------------- | -------- | -------- |
+  | `&`      | Y lógico    | `(x > 0) & (y > 0)` |          |          |
+  | `        | `           | O lógico            | `(x > 0) | (y < 0)` |
+  | `!`      | Negación    | `!TRUE`             |          |          |
+  
+  ---
+  
+  ## 3️⃣ Estructuras de datos
+  
+  ### ➤ Vectores (equivalente a arrays de un tipo)
+  
+  ```r
+nums <- c(1, 2, 3, 4)
+chars <- c("a", "b", "c")
+nums[1]        # Acceso (1-indexado)
+length(nums)
+sum(nums)
+```
+
+### ➤ Listas (pueden contener tipos diferentes)
+
+```r
+persona <- list(nombre = "Ana", edad = 25, notas = c(8, 9, 10))
+persona$nombre
+persona$notas[2]
+```
+
+### ➤ Matrices
+
+```r
+m <- matrix(1:9, nrow = 3, ncol = 3)
+m[1, 2]     # Fila 1, columna 2
+t(m)         # Transpuesta
+```
+
+### ➤ Data frames (equivalente a DataFrame de pandas)
+
+```r
+df <- data.frame(
+  nombre = c("Ana", "Luis", "Marta"),
+  edad = c(20, 22, 19),
+  nota = c(8.5, 7.3, 9.1)
+)
+head(df)
+df$edad
+mean(df$nota)
+```
+
+---
+  
+  ## 4️⃣ Estructuras de control
+  
+  ### ➤ Condicional `if` / `else if` / `else`
+  
+  ```r
+x <- 10
+if (x > 0) {
+  print("Positivo")
+} else if (x == 0) {
+  print("Cero")
+} else {
+  print("Negativo")
+}
+```
+
+### ➤ Bucle `for`
+
+```r
+for (i in 1:5) {
+  print(i)
+}
+```
+
+### ➤ Bucle `while`
+
+```r
+i <- 1
+while (i <= 5) {
+  print(i)
+  i <- i + 1
+}
+```
+
+### ➤ Bucle `repeat` (romper con `break`)
+
+```r
+i <- 1
+repeat {
+  print(i)
+  i <- i + 1
+  if (i > 5) break
+}
+```
+
+---
+  
+  ## 5️⃣ Funciones
+  
+  ### ➤ Definir funciones propias
+  
+  ```r
+suma <- function(a, b) {
+  return(a + b)
+}
+
+suma(3, 5)
+```
+
+### ➤ Parámetros por defecto
+
+```r
+potencia <- function(base, exp = 2) {
+  base ^ exp
+}
+potencia(3)      # 9
+potencia(3, 3)   # 27
+```
+
+### ➤ Funciones anónimas
+
+```r
+lapply(1:5, function(x) x^2)
+```
+
+---
+  
+  ## 6️⃣ Funciones predefinidas útiles
+  
+  | Categoría    | Funciones                                                                    |
+  | ------------ | ---------------------------------------------------------------------------- |
+  | Matemáticas  | `sum()`, `mean()`, `median()`, `sd()`, `var()`, `round()`, `abs()`, `sqrt()` |
+  | Texto        | `nchar()`, `toupper()`, `tolower()`, `paste()`, `substr()`, `grep()`         |
+  | Estadísticas | `summary()`, `quantile()`, `cor()`, `table()`, `prop.table()`                |
+  | Estructuras  | `length()`, `class()`, `str()`, `typeof()`, `is.na()`, `which()`             |
+  
+  ---
+  
+  ## 7️⃣ Lectura y escritura de datos
+  
+  ```r
+# Leer CSV
+datos <- read.csv("archivo.csv", sep = ",", header = TRUE)
+
+# Guardar CSV
+write.csv(datos, "salida.csv", row.names = FALSE)
+```
+
+---
+  
+  ## 8️⃣ Gráficos básicos (sin ggplot2)
+  
+  ```r
+x <- c(1, 2, 3, 4, 5)
+y <- x^2
+
+plot(x, y, type = "b", col = "blue", pch = 19, main = "Gráfico simple", xlab = "x", ylab = "y²")
+hist(y, col = "lightblue", main = "Histograma de y²")
+boxplot(y, main = "Boxplot de y²")
+```
+
+---
+  
+  ## 9️⃣ Importación de librerías
+  
+  ```r
+install.packages("tidyverse")  # Instalar (solo la primera vez)
+library(tidyverse)             # Cargar
+```
+
+---
+  
+  ## 🔟 Comparativa rápida Python vs R
+  
+  | Concepto       | Python               | R                     |
+  | -------------- | -------------------- | --------------------- |
+  | Asignación     | `x = 3`              | `x <- 3`              |
+  | Imprimir       | `print(x)`           | `print(x)`            |
+  | Tipo           | `type(x)`            | `class(x)`            |
+  | Lista          | `[1, 2, 3]`          | `c(1, 2, 3)`          |
+  | Índices        | 0-based              | 1-based               |
+  | Longitud       | `len(x)`             | `length(x)`           |
+  | Suma de vector | `sum(x)`             | `sum(x)`              |
+  | Bucle          | `for i in range(5):` | `for (i in 1:5) {}`   |
+  | Función        | `def f(x):`          | `f <- function(x) {}` |
+  | DataFrame      | `pd.DataFrame()`     | `data.frame()`        |
+  
+  ---
+  
+  # 💡 Conclusión
+  
+  R y Python comparten la mayoría de los fundamentos: variables, control, funciones y estructuras.
+La principal diferencia es que **R trabaja naturalmente con vectores y datos tabulares**, y tiene una sintaxis más **estadística y declarativa**.
+
+

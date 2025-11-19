@@ -1,0 +1,100 @@
+# ==========================================
+# 🧠 EDA Spotify Tracks 2023 en R
+# Autor: José Manuel Sánchez Álvarez
+# Curso: 2025–2026
+# ==========================================
+
+# 1️⃣ Cargar librerías ----
+library(tidyverse)   # Incluye dplyr, ggplot2, readr, etc.
+library(ggcorrplot)  # Para el mapa de correlaciones
+library(scales)      # Para formatear ejes
+
+# 2️⃣ Cargar el dataset ----
+spotify <- read_csv("spotify_tracks_2023.csv")
+
+# 3️⃣ Vista previa ----
+head(spotify)
+glimpse(spotify)
+summary(spotify)
+
+# 4️⃣ Limpieza básica ----
+# Quitar columna no necesaria
+spotify <- spotify %>% select(-`Unnamed:_0`)
+
+# Eliminar duplicados
+spotify <- spotify %>% distinct()
+
+# Comprobar nulos
+colSums(is.na(spotify))
+
+# 5️⃣ Estadísticas descriptivas ----
+# Popularidad
+summary(spotify$popularity)
+
+# Duración (en minutos)
+spotify <- spotify %>%
+  mutate(duration_min = duration_ms / 60000)
+
+summary(spotify$duration_min)
+
+# 6️⃣ Visualización básica ----
+# Histograma de popularidad
+ggplot(spotify, aes(x = popularity)) +
+  geom_histogram(binwidth = 5, fill = "steelblue", color = "white") +
+  labs(title = "Distribución de popularidad de canciones", x = "Popularidad", y = "Frecuencia")
+
+# Boxplot duración
+ggplot(spotify, aes(y = duration_min)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(title = "Duración de canciones (minutos)")
+
+# 7️⃣ Correlación entre variables numéricas ----
+numeric_cols <- spotify %>%
+  select(popularity, danceability, energy, loudness, speechiness,
+         acousticness, instrumentalness, liveness, valence, tempo)
+
+corr_matrix <- cor(numeric_cols, use = "complete.obs")
+
+ggcorrplot(corr_matrix, hc.order = TRUE, type = "lower",
+           lab = TRUE, lab_size = 3,
+           colors = c("red", "white", "blue"),
+           title = "Mapa de correlaciones entre atributos musicales")
+
+# 8️⃣ Análisis por género ----
+genre_stats <- spotify %>%
+  group_by(track_genre) %>%
+  summarise(media_pop = mean(popularity),
+            media_dance = mean(danceability),
+            n = n()) %>%
+  arrange(desc(media_pop))
+
+# Top 10 géneros
+head(genre_stats, 10)
+
+ggplot(genre_stats[1:10,], aes(x = reorder(track_genre, media_pop), y = media_pop)) +
+  geom_col(fill = "purple") +
+  coord_flip() +
+  labs(title = "Top 10 géneros por popularidad media",
+       x = "Género", y = "Popularidad media")
+
+# 9️⃣ Top artistas ----
+top_artistas <- spotify %>%
+  group_by(artists) %>%
+  summarise(canciones = n(),
+            popularidad_media = mean(popularity)) %>%
+  arrange(desc(popularidad_media)) %>%
+  head(10)
+
+print(top_artistas)
+
+ggplot(top_artistas, aes(x = reorder(artists, popularidad_media), y = popularidad_media)) +
+  geom_col(fill = "orange") +
+  coord_flip() +
+  labs(title = "Top 10 artistas por popularidad media",
+       x = "Artista", y = "Popularidad media")
+
+# 🔟 Conclusiones preliminares ----
+# - La mayoría de canciones duran entre 2 y 4 minutos.
+# - La popularidad se concentra en valores medios-altos.
+# - Los géneros con más energía tienden a ser más populares.
+# - Existen correlaciones moderadas entre energía, danceability y valence.

@@ -1,0 +1,133 @@
+---
+title: "Configurar Jupyter Notebooks con R en VS Code usando Conda"
+output: github_document
+---
+
+
+## 🧱 1️⃣ Crear y activar entorno conda
+
+Puedes llamarlo por ejemplo `r-env`:
+
+```bash
+conda create -n r-env r-base r-essentials -y
+conda activate r-env
+```
+
+### 🧩 Explicación:
+
+* `r-base`: instala el núcleo del lenguaje R.
+* `r-essentials`: incluye paquetes básicos de R + Jupyter kernel (`IRkernel`) + `tidyverse`, etc.
+
+> 💡 Si prefieres usar `mamba` (más rápido):
+>
+> ```bash
+> mamba create -n r-env r-base r-essentials -y
+> ```
+
+---
+
+## ⚙️ 2️⃣ Instalar y registrar el kernel de R en Jupyter
+
+Si `r-essentials` no lo hizo automáticamente (a veces no lo registra en algunos entornos), ejecútalo manualmente:
+
+```bash
+R
+```
+
+Y dentro de la consola de R:
+
+```r
+install.packages("IRkernel")
+IRkernel::installspec(user = FALSE)
+q()
+```
+
+🔹 Esto añade el kernel **"R"** a Jupyter y lo dejará visible en VS Code como opción.
+
+---
+
+## 🧰 3️⃣ Instalar extensiones en VS Code
+
+Abre VS Code y asegúrate de tener instaladas:
+
+| Extensión                              | Descripción                                   |
+| -------------------------------------- | --------------------------------------------- |
+| ✅ **Jupyter** (Microsoft)              | Permite abrir y ejecutar `.ipynb`             |
+| ✅ **R** (Yuki Ueda o R Editor Support) | Soporte de sintaxis y conexión con el kernel  |
+| ✅ **Python** (Microsoft)               | Necesaria si también usas notebooks de Python |
+
+> 💡 Consejo: reinicia VS Code después de instalar las extensiones.
+
+---
+
+## 📓 4️⃣ Crear un notebook de R
+
+1. Abre VS Code.
+2. Crea un nuevo archivo → **`Nuevo archivo → Jupyter Notebook (.ipynb)`**
+3. En la esquina superior derecha, selecciona el **kernel** → “R” (aparecerá como “R [conda env: r-env]”).
+
+O bien, puedes abrir un notebook ya existente (`.ipynb`) y cambiar el kernel a R.
+
+---
+
+## 🧩 5️⃣ Verificar instalación
+
+En una celda del notebook, ejecuta:
+
+```r
+version
+```
+
+Y debería mostrar algo como:
+
+```
+platform       x86_64-conda-linux-gnu
+version.string R version 4.3.2 (2023-10-31)
+```
+
+---
+
+## 📦 6️⃣ (Opcional) Instalar librerías adicionales
+
+Por si quieres tener el entorno listo para análisis:
+
+```r
+install.packages(c("tidyverse", "ggplot2", "dplyr", "ggcorrplot", "lubridate", "readr", "scales"))
+```
+
+O con conda/mamba directamente:
+
+```bash
+conda install -c conda-forge r-tidyverse r-ggcorrplot r-lubridate r-scales
+```
+
+---
+
+## 🧠 7️⃣ Consejos prácticos para clase
+
+* Los notebooks `.ipynb` con kernel R funcionan igual que los de Python (celdas, texto Markdown, resultados en línea).
+* Puedes usar **bloques Markdown** en las celdas, igual que en Jupyter.
+* Guarda con **Ctrl + S** y ejecuta con **Shift + Enter**.
+
+---
+
+## 🚀 8️⃣ Comprobación rápida (código de prueba)
+
+Crea una celda con este contenido para verificar que todo funciona:
+
+```r
+library(tidyverse)
+
+nums <- c(1, 2, 3, 4, 5)
+mean(nums)
+
+ggplot(data.frame(x = nums, y = nums^2), aes(x, y)) +
+  geom_line(color = "blue") +
+  geom_point(color = "red", size = 3) +
+  labs(title = "Prueba de gráfico con ggplot2")
+```
+
+Si se muestra el gráfico correctamente, el kernel R está funcionando 🔥.
+
+---
+
