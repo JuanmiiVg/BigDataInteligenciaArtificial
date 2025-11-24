@@ -1,0 +1,99 @@
+services:
+
+  # -----------------------
+  # 1. PostgreSQL
+  # -----------------------
+  postgres:
+    image: debezium/example-postgres:1.9
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=empresa
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # -----------------------
+  # 2. Zookeeper
+  # -----------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  # -----------------------
+  # 3. Kafka broker
+  # -----------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # -----------------------
+  # 4. Debezium connect
+  # -----------------------
+  connect:
+    image: debezium/connect:1.9
+    depends_on:
+      - kafka
+      - postgres
+    ports:
+      - "8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: debezium_config
+      OFFSET_STORAGE_TOPIC: debezium_offsets
+      STATUS_STORAGE_TOPIC: debezium_status
+      KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+
+  # -----------------------
+  # 5. MinIO (S3 simulado)
+  # -----------------------
+  minio:
+    image: minio/minio
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server /data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  # -----------------------
+  # 6. Airbyte
+  # -----------------------
+  airbyte-webapp:
+    image: airbyte/webapp:0.40.22
+    ports:
+      - "8000:8000"
+    depends_on:
+      - airbyte-server
+
+  airbyte-server:
+    image: airbyte/server:0.40.22
+    ports:
+      - "8001:8001"
+    environment:
+      - AIRBYTE_ROLE=server
+    volumes:
+      - airbyte_data:/data
+
+volumes:
+  pgdata:
+  minio_data:
+  airbyte_data:
