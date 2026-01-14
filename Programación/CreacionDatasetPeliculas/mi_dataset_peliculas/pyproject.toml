@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "mi_dataset_peliculas"
+version = "0.1.0"
+description = "Proyecto para construir un dataset de películas con TMDB y OMDb"
+authors = ["Tu Nombre <tu.email@example.com>"]
+packages = [{include = "mi_dataset_peliculas", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.31.0"
+pandas = "^2.3.3"
+python-dotenv = "^1.2.1"
+
+[tool.poetry.scripts]
+build-dataset = "mi_dataset_peliculas.build_dataset:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
