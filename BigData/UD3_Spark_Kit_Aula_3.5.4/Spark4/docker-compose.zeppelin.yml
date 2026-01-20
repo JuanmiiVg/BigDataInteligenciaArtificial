@@ -1,0 +1,26 @@
+services:
+  zeppelin:
+    image: apache/zeppelin:0.10.1
+    container_name: zeppelin
+    environment:
+      MASTER: spark://spark-master:7077
+      SPARK_MASTER: spark://spark-master:7077
+      PYSPARK_PYTHON: python3
+      PYSPARK_DRIVER_PYTHON: python3
+    ports:
+      - "8888:8080"
+    volumes:
+      - ./data:/opt/spark-data
+      - ./notebooks:/notebook
+      - zeppelin-conf:/opt/zeppelin/conf
+    networks:
+      - spark-net
+    restart: unless-stopped
+
+volumes:
+  zeppelin-conf:
+
+networks:
+  spark-net:
+    driver: bridge
+    external: true

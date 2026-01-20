@@ -1,0 +1,17 @@
+services:
+  spark-master:
+    image: apache/spark-py:latest
+    container_name: spark-master
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+    volumes:
+      - ./apps:/opt/spark-apps
+      - ./data:/opt/spark-data
+    networks:
+      - spark-net
+    command: bin/spark-class org.apache.spark.deploy.master.Master
+
+networks:
+  spark-net:
+    driver: bridge
