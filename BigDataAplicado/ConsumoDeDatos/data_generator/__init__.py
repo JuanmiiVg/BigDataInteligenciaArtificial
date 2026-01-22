@@ -1,0 +1,3 @@
+"""
+Módulo data_generator
+"""

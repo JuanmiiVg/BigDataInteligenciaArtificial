@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Docker
+.docker/
+docker_data/
+
+# Logs
+*.log
+logs/
+
+# Data
+data/
+*.csv
+*.ndjson
+
+# OS
+.DS_Store
+Thumbs.db
+
+# MongoDB
+mongo_data/
+
+# Kafka
+kafka_data/
+
+# Streamlit
+.streamlit/

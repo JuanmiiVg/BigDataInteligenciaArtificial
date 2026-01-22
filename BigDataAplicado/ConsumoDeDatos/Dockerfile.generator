@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copiar archivos
+COPY requirements.txt .
+COPY data_generator/ ./data_generator/
+COPY config/ ./config/
+
+# Instalar dependencias
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Exponer puerto
+EXPOSE 8000
+
+# Comando por defecto
+CMD ["python", "data_generator/api.py"]

@@ -1,0 +1,233 @@
+version: '3.8'
+
+services:
+  # PostgreSQL para histórico de consumos diarios
+  postgres:
+    image: postgres:15-alpine
+    container_name: consumo_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: consumo_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - consumo_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # MongoDB para almacenar datos mensuales agregados
+  mongodb:
+    image: mongo:latest
+    container_name: consumo_mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - consumo_network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Zookeeper para Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: consumo_zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_INIT_LIMIT: 5
+    ports:
+      - "2181:2181"
+    networks:
+      - consumo_network
+    healthcheck:
+      test: ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Kafka broker
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: consumo_kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 24
+    networks:
+      - consumo_network
+    healthcheck:
+      test: kafka-broker-api-versions --bootstrap-server localhost:9092
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API de generación de datos
+  data-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile.generator
+    container_name: consumo_generator
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_HOST=mongodb
+      - MONGO_USER=admin
+      - MONGO_PASSWORD=password
+      - KAFKA_BROKER=kafka:29092
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - NUM_CLIENTES=50
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - consumo_network
+    volumes:
+      - ./data_generator:/app/data_generator
+      - ./config:/app/config
+    command: python data_generator/api.py
+
+  # Producer Kafka
+  kafka-producer:
+    build:
+      context: .
+      dockerfile: Dockerfile.producer
+    container_name: consumo_producer
+    environment:
+      - MONGO_HOST=mongodb
+      - MONGO_USER=admin
+      - MONGO_PASSWORD=password
+      - KAFKA_BROKER=kafka:29092
+      - NUM_CLIENTES=50
+    depends_on:
+      kafka:
+        condition: service_healthy
+      data-generator:
+        condition: service_started
+    networks:
+      - consumo_network
+    volumes:
+      - ./kafka_producer:/app/kafka_producer
+      - ./config:/app/config
+    command: python kafka_producer/producer.py --mode continuous --interval 1 --broker kafka:29092
+
+  # Consumer Kafka
+  kafka-consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    container_name: consumo_consumer
+    environment:
+      - MONGO_HOST=mongodb
+      - MONGO_USER=admin
+      - MONGO_PASSWORD=password
+      - KAFKA_BROKER=kafka:29092
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=consumo_db
+      - POSTGRES_PORT=5432
+    depends_on:
+      kafka:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - consumo_network
+    volumes:
+      - ./kafka_consumer:/app/kafka_consumer
+      - ./config:/app/config
+    command: python kafka_consumer/consumer.py --broker kafka:29092
+
+  # Backend API REST
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: consumo_backend
+    ports:
+      - "8001:8000"
+    environment:
+      - MONGO_HOST=mongodb
+      - MONGO_USER=admin
+      - MONGO_PASSWORD=password
+      - MONGO_PORT=27017
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=consumo_db
+      - POSTGRES_PORT=5432
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - consumo_network
+    volumes:
+      - ./backend:/app/backend
+      - ./config:/app/config
+    command: python backend/api.py
+
+  # Frontend Streamlit
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: consumo_frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_LOGGER_LEVEL=info
+    depends_on:
+      - backend
+    networks:
+      - consumo_network
+    volumes:
+      - ./frontend:/app/frontend
+    command: streamlit run frontend/app.py
+
+networks:
+  consumo_network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local
+  postgres_data:
+    driver: local

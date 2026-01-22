@@ -1,0 +1,3 @@
+"""
+Módulo kafka_consumer
+"""
