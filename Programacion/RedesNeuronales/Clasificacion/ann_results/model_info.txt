@@ -1,0 +1,2 @@
+MLP base params: 18305
+MLP reg params: 18561

@@ -1,0 +1,18 @@
+# Requisitos del Sistema de Alerta de Tráfico
+
+# Librería principal de lógica difusa
+scikit-fuzzy>=0.4.2
+
+# Operaciones numéricas
+numpy>=1.21.0
+
+# Visualización
+matplotlib>=3.5.0
+
+# Opcional: Para análisis adicionales
+pandas>=1.3.0
+seaborn>=0.11.0
+
+# Para desarrollo y pruebas (opcional)
+pytest>=6.0.0
+jupyter>=1.0.0

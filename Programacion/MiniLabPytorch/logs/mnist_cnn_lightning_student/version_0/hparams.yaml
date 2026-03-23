@@ -1,0 +1,3 @@
+dropout_p: 0.3
+lr: 0.001
+optimizer_name: adam
