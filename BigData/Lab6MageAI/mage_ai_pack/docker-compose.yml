@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  mage:
+    image: mageai/mageai:latest
+    container_name: mage-ai-sbd
+    ports:
+      - "6789:6789"
+    environment:
+      USER_CODE_PATH: /home/src/mage_project
+      MAGE_DISABLE_TELEMETRY: "1"
+    volumes:
+      - ./mage_project:/home/src/mage_project
+      - ./data:/home/src/data
+    working_dir: /home/src
+    command: >
+      /bin/sh -c '
+      if [ ! -f /home/src/mage_project/metadata.yaml ]; then
+        mage start mage_project;
+      fi &&
+      cd /home/src/mage_project &&
+      mage start
+      '

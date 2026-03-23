@@ -1,0 +1,19 @@
+services:
+  superset:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ud4-superset-postgres:latest
+    container_name: ud4_superset_app
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    env_file:
+      - .env
+    volumes:
+      - superset_home:/app/superset_home
+      - ./init:/app/init
+    command: ["/bin/sh", "-c", "sh /app/init/superset_init.sh && /usr/bin/run-server.sh"]
+
+volumes:
+  superset_home:

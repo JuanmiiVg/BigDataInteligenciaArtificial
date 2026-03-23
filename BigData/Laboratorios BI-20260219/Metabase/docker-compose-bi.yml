@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: bi_postgres
+    environment:
+      POSTGRES_USER: bi_user
+      POSTGRES_PASSWORD: bi_pass
+      POSTGRES_DB: bi_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - bi_data:/var/lib/postgresql/data
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    ports:
+      - "3001:3000"
+    depends_on:
+      - postgres
+
+volumes:
+  bi_data:

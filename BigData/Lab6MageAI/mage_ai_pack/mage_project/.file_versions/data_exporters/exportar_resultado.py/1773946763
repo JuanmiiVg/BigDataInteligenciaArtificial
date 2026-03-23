@@ -1,0 +1,5 @@
+def export_data(df, *args, **kwargs):
+output_path = '/home/src/data/resumen_ventas_por_ciudad_y_linea.csv'
+df.to_csv(output_path, index=False)
+print('Exportado en:', output_path)
+print(df.head(10))

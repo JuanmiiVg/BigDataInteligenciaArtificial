@@ -1,2 +1,12 @@
 .env
 */.env
+
+# Excluir artefactos pesados y entornos locales dentro de BigData
+BigData/**/.venv/
+BigData/UD3_Spark_Kit_Aula_3.5.4/zeppelin-0.11.1-bin-all.tgz
+BigData/UD3_Spark_Kit_Aula_3.5.4/Spark4/notebooks/
+BigData/UD3_Spark_Kit_Aula_3.5.4/work/
+
+# Basura de notebooks/cache
+**/__pycache__/
+**/.ipynb_checkpoints/

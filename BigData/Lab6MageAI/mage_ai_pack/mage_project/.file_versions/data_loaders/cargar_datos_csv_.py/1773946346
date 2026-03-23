@@ -1,0 +1,5 @@
+import pandas as pd
+
+def load_data(*args, **kwargs):
+df = pd.read_csv('/home/src/data/supermarket_sales_small.csv')
+return df

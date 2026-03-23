@@ -1,0 +1,22 @@
+import pandas as pd
+
+def transform(df, *args, **kwargs):
+data = df.copy()
+
+data['Date'] = pd.to_datetime(data['Date'], errors='coerce')
+data = data.dropna(subset=['Date'])
+
+data['ingreso_neto_estimado'] = data['Total'] - data['Tax 5%']
+
+resumen = (
+data.groupby(['City', 'Product line'], as_index=False)
+.agg(
+ventas_totales=('Total', 'sum'),
+ingreso_neto_total=('ingreso_neto_estimado', 'sum'),
+rating_medio=('Rating', 'mean'),
+tickets=('Invoice ID', 'count')
+)
+.sort_values(['ventas_totales', 'tickets'], ascending=[False, False])
+)
+
+return resumen
